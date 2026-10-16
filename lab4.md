@@ -15,3 +15,22 @@ The inference service doesn't need to expose a port because only the frontend co
 
 ## Question 6
 If MLflow isn't ready, the inference container fails to load the model and may crash. We can see the error using docker compose logs inference. We can fix this by adding a health check or a restart policy.
+
+## Question 7
+The frontend (8501) and MLflow (5001) have published ports. Inference doesn't have a published port because it communicates with the other containers through Docker's internal network. This matches our docker-compose.yml.
+
+## Question 8
+
+Before restarting, the frontend uses the old model version because serve.py loads the model only once at startup. To use the new Staging version, we run:
+
+docker compose restart inference
+
+## Question 9
+
+Restart works because the model isn't stored inside the Docker image. The image contains the code and dependencies, while the model is fetched from MLflow at startup. So we don't need to rebuild the image.
+
+## Question 10
+
+After docker compose down and up, the registered model and its Staging alias are still there because the named volume keeps the data.
+
+However, docker compose down -v also deletes the volume, so the MLflow database and artifacts are lost. When we start again, MLflow creates an empty database, and the registered model and Staging alias disappear.
