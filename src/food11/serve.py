@@ -1,12 +1,12 @@
 import io
 import os
+from typing import Annotated
 
 import mlflow
 import torch
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from PIL import Image
 from torchvision import transforms
-
 
 app = FastAPI()
 
@@ -45,8 +45,15 @@ tracking_uri = os.getenv(
 
 mlflow.set_tracking_uri(tracking_uri)
 
-# Load model only once when the server starts
-model = mlflow.pyfunc.load_model("models:/food11@champion")
+model = None
+
+
+@app.on_event("startup")
+def load_model():
+    global model
+    if os.environ.get("SKIP_MODEL"):
+        return
+    model = mlflow.pyfunc.load_model("models:/food11@champion")
 
 
 @app.get("/health")
@@ -55,7 +62,10 @@ def health():
 
 
 @app.post("/predict")
-async def predict(file: UploadFile = File(...)):
+async def predict(file: Annotated[UploadFile, File()]):
+    if model is None:
+        raise HTTPException(status_code=503, detail="Model is not loaded")
+
     contents = await file.read()
 
     image = Image.open(io.BytesIO(contents)).convert("RGB")

@@ -1,6 +1,8 @@
-from pathlib import Path
-from PIL import Image
+
 import shutil
+from pathlib import Path
+
+from PIL import Image
 
 categories = {
     "0": "Bread",
@@ -16,49 +18,62 @@ categories = {
     "10": "Vegetable-Fruit",
 }
 
-raw_folder = Path("data/food11_raw")
-processed_folder = Path("data/food11_processed")
-mini_folder = Path("data/food11_processed_mini")
+CLASSES = list(categories.values())
 
-# Delete old processed folders if they already exist
-if processed_folder.exists():
-    shutil.rmtree(processed_folder)
 
-if mini_folder.exists():
-    shutil.rmtree(mini_folder)
+def category_from_filename(filename: str) -> str | None:
+    class_number = filename.split("_")[0]
+    return categories.get(class_number)
 
-splits = ["training", "evaluation", "validation"]
 
-for split in splits:
+def resize_image(img: Image.Image, size: int = 128) -> Image.Image:
+    """Return an RGB image resized to ``size`` by ``size`` pixels."""
+    return img.convert("RGB").resize((size, size))
 
-    counts = {category: 0 for category in categories.values()}
 
-    for file in sorted((raw_folder / split).iterdir()):
+def main():
+    raw_folder = Path("data/food11_raw")
+    processed_folder = Path("data/food11_processed")
+    mini_folder = Path("data/food11_processed_mini")
 
-        if not file.is_file():
-            continue
+    # Delete old processed folders if they already exist
+    if processed_folder.exists():
+        shutil.rmtree(processed_folder)
 
-        class_number = file.name.split("_")[0]
+    if mini_folder.exists():
+        shutil.rmtree(mini_folder)
 
-        if class_number not in categories:
-            continue
+    splits = ["training", "evaluation", "validation"]
 
-        category = categories[class_number]
+    for split in splits:
+        counts = {category: 0 for category in categories.values()}
 
-        output_folder = processed_folder / split / category
-        mini_output_folder = mini_folder / split / category
+        for file in sorted((raw_folder / split).iterdir()):
+            if not file.is_file():
+                continue
 
-        output_folder.mkdir(parents=True, exist_ok=True)
-        mini_output_folder.mkdir(parents=True, exist_ok=True)
+            category = category_from_filename(file.name)
 
-        with Image.open(file) as img:
-            img = img.convert("RGB")
-            img = img.resize((128, 128))
+            if category is None:
+                continue
 
-            img.save(output_folder / file.name)
+            output_folder = processed_folder / split / category
+            mini_output_folder = mini_folder / split / category
 
-            if counts[category] < 100:
-                img.save(mini_output_folder / file.name)
-                counts[category] += 1
+            output_folder.mkdir(parents=True, exist_ok=True)
+            mini_output_folder.mkdir(parents=True, exist_ok=True)
 
-print("Data preparation finished.")
+            with Image.open(file) as img:
+                img = resize_image(img)
+
+                img.save(output_folder / file.name)
+
+                if counts[category] < 100:
+                    img.save(mini_output_folder / file.name)
+                    counts[category] += 1
+
+    print("Data preparation finished.")
+
+
+if __name__ == "__main__":
+    main()
