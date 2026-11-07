@@ -26,7 +26,7 @@ If `test` fails, GitHub Actions skips `smoke` because it depends on `test`. With
 
 ### 6. How long did the workflow take, and what got faster on the second run?
 
-Not measured in this local run: the workflow has not been dispatched on GitHub Actions, so there is no Actions timing to report or compare. The workflow enables uv's dependency cache; on a subsequent run, dependency setup should benefit from cached packages. Record the actual run durations and step timings from the Actions UI after the workflow runs.
+The first fully successful end-to-end run took about 4 minutes 48 seconds (run [42388822023](https://github.com/kristytannoury/mlops-lab-1/actions/runs/42388822023)). The earlier runs failed before completing the checks, so they do not provide a valid timing comparison. The workflow has uv caching enabled; compare the `uv sync` step against a second successful run to see whether cached dependencies make it faster.
 
 ### 7. Why tag the image with the commit SHA instead of `latest`?
 
