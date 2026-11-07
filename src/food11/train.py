@@ -1,6 +1,5 @@
 import argparse
 from pathlib import Path
-from xml.parsers.expat import model
 
 import mlflow
 import mlflow.pytorch
@@ -9,7 +8,6 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torchvision import datasets, models, transforms
 from torchvision.models import ResNet18_Weights
-
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
