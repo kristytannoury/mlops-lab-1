@@ -26,7 +26,7 @@ If `test` fails, GitHub Actions skips `smoke` because it depends on `test`. With
 
 ### 6. How long did the workflow take, and what got faster on the second run?
 
-The successful `main` run took about 4 minutes 48 seconds (run [42388822023](https://github.com/kristytannoury/mlops-lab-1/actions/runs/42388822023)), including the image-push job. A repeat on a feature branch took about 1 minute 16 seconds, but it skipped the `push` job by design, so the total times are not directly comparable. `uv sync` took 3 seconds on the first successful run and 4 seconds on the repeat; it did not measurably get faster. The CI cache was already warm, so dependency setup stayed brief.
+The first successful `main` run took about 4 minutes 48 seconds ([run](https://github.com/kristytannoury/mlops-lab-1/actions/runs/42388822023)); the next successful `main` run took about 1 minute 55 seconds ([run](https://github.com/kristytannoury/mlops-lab-1/actions/runs/42389783555)). The `Build and push image` step dropped from about 3 minutes to 5 seconds because BuildKit reused the GitHub Actions layer cache. `uv sync` stayed about 3 seconds in both runs.
 
 ### 7. Why tag the image with the commit SHA instead of `latest`?
 
